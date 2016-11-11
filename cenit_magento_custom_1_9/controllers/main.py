@@ -64,9 +64,8 @@ class MagentoController(WebhookController):
             order_data['partner_invoice_id'] = partner_id  # Updating invoice address
             order_data['partner_shipping_id'] = partner_id  # Updating shipping address
 
-            order_data['payment_term_id'] = self.get_id_from_record(cr, 'account.payment.term',
-                                                                    [('name', '=', order_data['payment_term_id'])],
-                                                                    context=context)
+            partner = request.registry['res.partner'].browse(cr, SUPERUSER_ID, partner_id, context=context)[0]
+            order_data['payment_term_id'] = partner['property_payment_term_id']['id']
 
             order_data['warehouse_id'] = self.get_id_from_record(cr, 'stock.warehouse',
                                                                  [('name', '=', order_data['warehouse_id'])],
