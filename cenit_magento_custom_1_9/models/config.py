@@ -97,7 +97,7 @@ class CenitIntegrationSettings(models.TransientModel):
                             },
                             {
                              "key": "COOKIE",
-                             "value": "session_id={% eval Devise.friendly_token %}"
+                             "value": "session_id={% eval Devise.friendly_token %}; Expires=True"
                             }
                             ]
 
