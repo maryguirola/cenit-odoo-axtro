@@ -114,8 +114,15 @@ class MagentoController(WebhookController):
                             line['tax_id'] = [[x.id] for x in product['taxes_id']]
                             line['tax_id'] = [(6, False, line['tax_id'][0])]
 
-                            line['property_account_income_id'] = product['property_account_income_id']['id']
-                            line['property_account_expense_id'] = product['property_account_expense_id']['id']
+                            if product['property_account_income_id']['id']:
+                                line['property_account_income_id'] = product['property_account_income_id']['id']
+                            else:
+                                line['property_account_income_id'] = product['categ_id']['property_account_income_categ_id']['id']
+
+                            if product['property_account_expense_id']['id']:
+                                line['property_account_expense_id'] = product['property_account_expense_id']['id']
+                            else:
+                                line['property_account_expense_id'] = product['categ_id']['property_account_expense_categ_id']['id']
 
                             line_id = self.get_id_from_record(cr, 'sale.order.line', [('order_id', '=', order_id),
                                                                                       ('product_id', '=', product['id'])], context=context)
