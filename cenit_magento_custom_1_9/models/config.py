@@ -93,7 +93,7 @@ class CenitIntegrationSettings(models.TransientModel):
                             },
                             {
                              "key": "TENANT_DB",
-                             "value": conn.url
+                             "value": cr.dbname
                             },
                             {
                              "key": "COOKIE",

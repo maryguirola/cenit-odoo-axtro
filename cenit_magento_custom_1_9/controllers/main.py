@@ -94,12 +94,12 @@ class MagentoController(WebhookController):
                     # Create order lines
                     if lines:
                         for line in lines:
-                            i_registry = request.registry['product.product']
+                            i_registry = request.registry['product.template']
                             if 'jmd_product_barcode' in i_registry:
                                 domain = [('jmd_product_barcode', '=', line['jmd_product_barcode'])]
                             else:
                                 domain = [('barcode', '=', line['jmd_product_barcode'])]
-                            line['product_id'] = self.get_id_from_record(cr, 'product.product', domain, context=context)
+                            line['product_id'] = self.get_id_from_record(cr, 'product.template', domain, context=context)
 
                             # if not line['product_id']:
                             #     i_registry.create(cr, SUPERUSER_ID, )
