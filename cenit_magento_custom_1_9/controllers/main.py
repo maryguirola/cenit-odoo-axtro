@@ -101,37 +101,36 @@ class MagentoController(WebhookController):
                                 domain = [('barcode', '=', line['jmd_product_barcode'])]
                             line['product_id'] = self.get_id_from_record(cr, 'product.template', domain, context=context)
 
-                            # if not line['product_id']:
-                            #     i_registry.create(cr, SUPERUSER_ID, )
-
-                            product = i_registry.browse(cr, SUPERUSER_ID, line['product_id'], context=context)[0]
-                            line['name'] = product['name']
-                            line['order_id'] = order_id
-                            line['product_uom'] = product['uom_id']['id']
-                            line['price_unit'] = product['list_price']
-                            line['customer_lead'] = product['sale_delay']
-
-                            line['tax_id'] = [[x.id] for x in product['taxes_id']]
-                            line['tax_id'] = [(6, False, line['tax_id'][0])]
-
-                            if product['property_account_income_id']['id']:
-                                line['property_account_income_id'] = product['property_account_income_id']['id']
+                            if not line['product_id']:
+                                errors = 'There is no Product named '+line['name']
                             else:
-                                line['property_account_income_id'] = product['categ_id']['property_account_income_categ_id']['id']
 
-                            if product['property_account_expense_id']['id']:
-                                line['property_account_expense_id'] = product['property_account_expense_id']['id']
-                            else:
-                                line['property_account_expense_id'] = product['categ_id']['property_account_expense_categ_id']['id']
+                                product = i_registry.browse(cr, SUPERUSER_ID, line['product_id'], context=context)[0]
+                                line['name'] = product['name']
+                                line['order_id'] = order_id
+                                line['product_uom'] = product['uom_id']['id']
+                                line['price_unit'] = product['list_price']
+                                line['customer_lead'] = product['sale_delay']
 
-                            line_id = self.get_id_from_record(cr, 'sale.order.line', [('order_id', '=', order_id),
-                                                                                      ('product_id', '=', product['id'])], context=context)
-                            if not line_id:
-                                request.registry['sale.order.line'].create(cr, SUPERUSER_ID, line)
-                            else:
-                                request.registry['sale.order.line'].write(cr, SUPERUSER_ID, line_id, line)
+                                line['tax_id'] = [[x.id] for x in product['taxes_id']]
+                                line['tax_id'] = [(6, False, line['tax_id'][0])]
 
+                                if product['property_account_income_id']['id']:
+                                    line['property_account_income_id'] = product['property_account_income_id']['id']
+                                else:
+                                    line['property_account_income_id'] = product['categ_id']['property_account_income_categ_id']['id']
 
+                                if product['property_account_expense_id']['id']:
+                                    line['property_account_expense_id'] = product['property_account_expense_id']['id']
+                                else:
+                                    line['property_account_expense_id'] = product['categ_id']['property_account_expense_categ_id']['id']
+
+                                line_id = self.get_id_from_record(cr, 'sale.order.line', [('order_id', '=', order_id),
+                                                                                          ('product_id', '=', product['id'])], context=context)
+                                if not line_id:
+                                    request.registry['sale.order.line'].create(cr, SUPERUSER_ID, line)
+                                else:
+                                    request.registry['sale.order.line'].write(cr, SUPERUSER_ID, line_id, line)
             except Exception as e:
                 _logger.error(e)
                 errors = e
@@ -140,9 +139,9 @@ class MagentoController(WebhookController):
                 order_data['order_line'] = lines
                 errors = self.create_invoice(cr, order_data, request, context)
 
-            return {'errors': errors} if errors else None
+            return {'errors': {'notify': errors}} if errors else None
 
-        return {'errors:': 'There is no Customer named %s'(partner_name)}
+        return {'errors:': {'notify': 'There is no Customer named ' + partner_name}}
 
     def get_id_from_record(self, cr, model, domain, context):
         i_registry = request.registry[model]
