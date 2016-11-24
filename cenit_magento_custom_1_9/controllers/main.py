@@ -101,7 +101,7 @@ class MagentoController(http.Controller):
                             line['product_id'] = self.get_id_from_record(cr, registry, 'product.template', domain, context=context)
 
                             if not line['product_id']:
-                                errors = 'There is no Product named '+line['name']
+                                errors = 'Product '+line['name'] + ' -' + line['jmd_product_barcode'] + ' is found in Magento but not in Odoo'
                             else:
                                 product = i_registry.browse(cr, SUPERUSER_ID, line['product_id'], context=context)[0]
                                 line['name'] = product['name']
@@ -135,7 +135,20 @@ class MagentoController(http.Controller):
 
             if not errors:
                 order_data['order_line'] = lines
-                errors = self.create_invoice(cr, order_data, request, registry, context)
+                ord_id = self.get_id_from_record(cr,  registry, 'sale.order', [('name', '=', order_data['name'])], context=context)
+                ord = registry['sale.order'].browse(cr, SUPERUSER_ID, ord_id, context=context)[0]
+                try:
+                    inv_id = ord.action_invoice_create()
+                    inv = registry['account.invoice'].browse(cr, SUPERUSER_ID, inv_id, context=context)[0]
+                    inv.action_move_create()
+
+                    #updating date invoice
+                    inv_date = order_data.get('date_order', datetime.now())
+                    registry['account.invoice'].write(cr, SUPERUSER_ID, inv_id, {'date_invoice': inv_date, 'state': 'open'})
+
+                except Exception as e:
+                  _logger.error(e)
+                  errors = e
 
             return {'errors': {'notify': errors}} if errors else None
 
@@ -148,58 +161,3 @@ class MagentoController(http.Controller):
             return rc[0]
         else:
             return None
-
-    def create_invoice(self, cr, order, request, registry, context):
-        i_registry = registry['account.invoice']
-
-        invoice_data = {}
-        invoice_data['partner_id'] = order.get('partner_id', '')
-        invoice_data['jmd_partner_shipping_id'] = order.get('partner_shipping_id', '')
-        invoice_data['payment_term_id'] = order.get('payment_term_id', '')
-        invoice_data['date_invoice'] = order.get('date_order', datetime.now())
-        invoice_data['user_id'] = order.get('user_id', '')
-        invoice_data['team_id'] = order.get('team_id', '')
-        # invoice_data['currency_id'] = 'SGD'
-
-        journal_id = self.get_id_from_record(cr, registry, 'account.journal', [('name', '=', 'Sales Journal')], context=context)
-        invoice_data['journal_id'] = journal_id
-
-        account_id = self.get_id_from_record(cr, registry, 'account.account', [('name', '=', 'Trade Debtors')], context=context)
-        invoice_data['account_id'] = account_id
-
-        invoice_data['origin'] = order.get('name', '')
-        invoice_data['state'] = 'open'
-
-
-        errors = ''
-        try:
-            invoice_id = self.get_id_from_record(cr, registry, 'account.invoice', [('origin', '=', order.get('name'))], context=context)
-            if not invoice_id:
-               invoice_id = i_registry.create(cr, SUPERUSER_ID, invoice_data)
-            else:
-                 i_registry.write(cr, SUPERUSER_ID, invoice_id, invoice_data)
-
-            if invoice_id:
-                orderlines = order.get('order_line', {})
-                for ord in orderlines:
-                    ord['quantity'] = ord['product_uom_qty']
-                    ord.pop('product_uom_qty')
-                    ord['uom_id'] = ord['product_uom']
-                    ord.pop('product_uom')
-                    ord['invoice_line_tax_ids'] = ord['tax_id']
-                    ord.pop('tax_id')
-                    ord['invoice_id'] = invoice_id
-                    ord['account_id'] = ord.get('property_account_income_id', 'property_account_expense_id')
-
-                    line_id = self.get_id_from_record(cr, registry, 'account.invoice.line', [('invoice_id', '=', invoice_id),
-                                                                                   ('product_id', '=', ord['product_id'])], context=context)
-                    if not line_id:
-                        registry['account.invoice.line'].create(cr, SUPERUSER_ID, ord)
-                    else:
-                        registry['account.invoice.line'].write(cr, SUPERUSER_ID, line_id, ord)
-        except Exception as e:
-            _logger.error(e)
-            errors = e
-
-
-        return errors if errors else None
