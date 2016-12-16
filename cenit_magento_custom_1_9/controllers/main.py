@@ -138,7 +138,8 @@ class MagentoController(http.Controller):
                 ord_id = self.get_id_from_record(cr,  registry, 'sale.order', [('name', '=', order_data['name'])], context=context)
                 ord = registry['sale.order'].browse(cr, SUPERUSER_ID, ord_id, context=context)[0]
                 try:
-                    inv_id = ord.action_invoice_create()
+                    ord.action_confirm() #Creating delivery
+                    inv_id = ord.action_invoice_create() #Creating invoice
                     inv = registry['account.invoice'].browse(cr, SUPERUSER_ID, inv_id, context=context)[0]
                     inv.action_move_create()
 
