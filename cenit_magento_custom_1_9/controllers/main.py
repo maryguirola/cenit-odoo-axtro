@@ -139,6 +139,7 @@ class MagentoController(http.Controller):
                 ord = registry['sale.order'].browse(cr, SUPERUSER_ID, ord_id, context=context)[0]
                 try:
                     ord.action_confirm() #Creating delivery
+                    ord.action_done()  #Confirm order to status "Done"
                     inv_id = ord.action_invoice_create() #Creating invoice
                     inv = registry['account.invoice'].browse(cr, SUPERUSER_ID, inv_id, context=context)[0]
                     inv.action_move_create()
