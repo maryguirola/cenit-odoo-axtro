@@ -144,9 +144,13 @@ class MagentoController(http.Controller):
                     inv = registry['account.invoice'].browse(cr, SUPERUSER_ID, inv_id, context=context)[0]
                     inv.action_move_create()
 
-                    #updating date invoice
+                    #updating date and state's invoice
                     inv_date = order_data.get('date_order', datetime.now())
-                    registry['account.invoice'].write(cr, SUPERUSER_ID, inv_id, {'date_invoice': inv_date, 'state': 'open'})
+                    state = 'open'
+                    if order_data['amount_total'] == 0:
+                        state = 'paid'
+                    registry['account.invoice'].write(cr, SUPERUSER_ID, inv_id, {'date_invoice': inv_date, 'state': state})
+
 
                 except Exception as e:
                   _logger.error(e)
