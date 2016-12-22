@@ -107,7 +107,10 @@ class MagentoController(http.Controller):
                                 line['name'] = product['name']
                                 line['order_id'] = order_id
                                 line['product_uom'] = product['uom_id']['id']
-                                line['price_unit'] = product['list_price']
+
+                                if product['list_price'] == line["price_unit"]:
+                                   line['price_unit'] = product['list_price']
+
                                 line['customer_lead'] = product['sale_delay']
 
                                 line['tax_id'] = [[x.id] for x in product['taxes_id']]
@@ -151,6 +154,18 @@ class MagentoController(http.Controller):
                         state = 'paid'
                     registry['account.invoice'].write(cr, SUPERUSER_ID, inv_id, {'date_invoice': inv_date, 'state': state})
 
+                    #STOCK
+                    stock_pick_id = self.get_id_from_record(cr,  registry, 'stock.picking', [('origin', '=', order_data['name'])], context=context)
+                    stock_pick = registry['stock.picking'].browse(cr, SUPERUSER_ID, stock_pick_id, context=context)[0]
+
+                    if stock_pick["state"] == "confirmed":
+                       stock_pick.force_assign() # Forcing assign
+                    else:
+                       stock_pick.do_new_transfer() #Validating assign
+
+                    stock_transf_id = registry['stock.immediate.transfer'].create(cr, SUPERUSER_ID, {'pick_id': stock_pick.id}, context=context)
+                    stock_transf = registry['stock.immediate.transfer'].browse(cr, SUPERUSER_ID, stock_transf_id, context=context)[0]
+                    stock_transf.process()
 
                 except Exception as e:
                   _logger.error(e)
