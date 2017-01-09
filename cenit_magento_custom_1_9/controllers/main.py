@@ -94,10 +94,7 @@ class MagentoController(http.Controller):
                     if lines:
                         for line in lines:
                             i_registry = registry['product.template']
-                            if 'jmd_product_barcode' in i_registry:
-                                domain = [('jmd_product_barcode', '=', line['jmd_product_barcode'])]
-                            else:
-                                domain = [('barcode', '=', line['jmd_product_barcode'])]
+                            domain = [('barcode', '=', line['jmd_product_barcode'])]
                             line['product_id'] = self.get_id_from_record(cr, registry, 'product.template', domain, context=context)
 
                             if not line['product_id']:
