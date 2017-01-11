@@ -93,11 +93,7 @@ class CenitIntegrationSettings(models.TransientModel):
                             },
                             {
                              "key": "TENANT_DB",
-                             "value": conn.url
-                            },
-                            {
-                             "key": "COOKIE",
-                             "value": "session_id={% eval Devise.friendly_token %}"
+                             "value": cr.dbname
                             }
                             ]
 
