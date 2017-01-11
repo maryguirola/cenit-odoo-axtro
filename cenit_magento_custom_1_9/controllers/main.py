@@ -93,9 +93,9 @@ class MagentoController(http.Controller):
                     # Create order lines
                     if lines:
                         for line in lines:
-                            i_registry = registry['product.template']
+                            i_registry = registry['product.product']
                             domain = [('barcode', '=', line['jmd_product_barcode'])]
-                            line['product_id'] = self.get_id_from_record(cr, registry, 'product.template', domain, context=context)
+                            line['product_id'] = self.get_id_from_record(cr, registry, 'product.product', domain, context=context)
 
                             if not line['product_id']:
                                 errors = 'Product '+line['name'] + ' -' + line['jmd_product_barcode'] + ' is found in Magento but not in Odoo'
@@ -104,9 +104,6 @@ class MagentoController(http.Controller):
                                 line['name'] = product['name']
                                 line['order_id'] = order_id
                                 line['product_uom'] = product['uom_id']['id']
-
-                                if product['list_price'] == line["price_unit"]:
-                                   line['price_unit'] = product['list_price']
 
                                 line['customer_lead'] = product['sale_delay']
 
