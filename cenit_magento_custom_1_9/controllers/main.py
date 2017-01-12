@@ -147,7 +147,8 @@ class MagentoController(http.Controller):
                     if order_data['amount_total'] == 0:
                         state = 'paid'
                     registry['account.invoice'].write(cr, SUPERUSER_ID, inv_id, {'date_invoice': inv_date, 'state': state})
-
+                    inv._onchange_payment_term_date_invoice()
+                    
                     #STOCK
                     stock_pick_id = self.get_id_from_record(cr,  registry, 'stock.picking', [('origin', '=', order_data['name'])], context=context)
                     stock_pick = registry['stock.picking'].browse(cr, SUPERUSER_ID, stock_pick_id, context=context)[0]
