@@ -1,7 +1,7 @@
 import logging
 from openerp import http
 from openerp.http import request
-from openerp import SUPERUSER_ID
+from openerp import SUPERUSER_ID, workflow
 from openerp.modules.registry import RegistryManager
 import json, simplejson
 from datetime import datetime
@@ -138,17 +138,12 @@ class MagentoController(http.Controller):
                     ord.action_confirm() #Creating delivery
                     ord.action_done()  #Confirm order to status "Done"
                     inv_id = ord.action_invoice_create() #Creating invoice
-                    inv = registry['account.invoice'].browse(cr, SUPERUSER_ID, inv_id, context=context)[0]
-                    inv.action_move_create()
 
-                    #updating date and state's invoice
-                    inv_date = order_data.get('date_order', datetime.now())
-                    state = 'open'
                     if order_data['amount_total'] == 0:
-                        state = 'paid'
-                    registry['account.invoice'].write(cr, SUPERUSER_ID, inv_id, {'date_invoice': inv_date, 'state': state})
-                    inv._onchange_payment_term_date_invoice()
-                    
+                       workflow.trg_validate(SUPERUSER_ID, 'account.invoice', inv_id[0], 'invoice_paid', cr)
+                    else:
+                       workflow.trg_validate(SUPERUSER_ID, 'account.invoice', inv_id[0], 'invoice_open', cr)
+
                     #STOCK
                     stock_pick_id = self.get_id_from_record(cr,  registry, 'stock.picking', [('origin', '=', order_data['name'])], context=context)
                     stock_pick = registry['stock.picking'].browse(cr, SUPERUSER_ID, stock_pick_id, context=context)[0]
