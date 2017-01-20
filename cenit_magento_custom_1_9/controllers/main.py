@@ -140,7 +140,11 @@ class MagentoController(http.Controller):
                     inv_id = ord.action_invoice_create() #Creating invoice
 
                     if order_data['amount_total'] == 0:
-                       workflow.trg_validate(SUPERUSER_ID, 'account.invoice', inv_id[0], 'invoice_paid', cr)
+                       inv = registry['account.invoice'].browse(cr, SUPERUSER_ID, inv_id, context=context)[0]
+                       inv.action_move_create()
+                       inv_date = order_data.get('date_order', datetime.now())
+                       registry['account.invoice'].write(cr, SUPERUSER_ID, inv_id, {'date_invoice': inv_date, 'state': 'paid'})
+                       inv._onchange_payment_term_date_invoice()
                     else:
                        workflow.trg_validate(SUPERUSER_ID, 'account.invoice', inv_id[0], 'invoice_open', cr)
 
