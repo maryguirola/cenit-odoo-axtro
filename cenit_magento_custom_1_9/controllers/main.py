@@ -57,6 +57,10 @@ class MagentoController(http.Controller):
         partner_name = order_data['partner_id']['name']
         context = request.context
 
+        order_id = self.get_id_from_record(cr, registry, 'sale.order', [('jmd_po_number_so', '=', order_data.get('jmd_po_number_so'))], context=context)
+        if order_id and not data['force_creation']:
+            return {'errors': {'notify': 'The order ' + order_data.get('jmd_po_number_so') + 'is already created in Odoo'}}
+
         partner_id = self.get_id_from_record(cr, registry, 'res.partner', [('name', '=', partner_name)], context=context)
         if partner_id:
             order_data['partner_id'] = partner_id  # Updating partner_id(Customer)
