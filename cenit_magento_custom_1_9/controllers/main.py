@@ -57,6 +57,10 @@ class MagentoController(http.Controller):
         partner_name = order_data['partner_id']['name']
         context = request.context
 
+        order_id = self.get_id_from_record(cr, registry, 'sale.order', [('jmd_po_number_so', '=', order_data.get('jmd_po_number_so'))], context=context)
+        if order_id and not data['force_creation']:
+           return {'errors': {'notify': 'The order ' + order_data.get('jmd_po_number_so') + 'is already created in Odoo'}}
+
         partner_id = self.get_id_from_record(cr, registry, 'res.partner', [('name', '=', partner_name)], context=context)
         if partner_id:
             order_data['partner_id'] = partner_id  # Updating partner_id(Customer)
@@ -75,8 +79,6 @@ class MagentoController(http.Controller):
 
             order_data['team_id'] = self.get_id_from_record(cr, registry,'crm.team', [('name', '=', order_data['team_id'])],
                                                             context=context)
-            order_data['invoice_status'] = 'invoiced'
-
             errors = None
 
             lines = {}
@@ -136,18 +138,6 @@ class MagentoController(http.Controller):
                 ord = registry['sale.order'].browse(cr, SUPERUSER_ID, ord_id, context=context)[0]
                 try:
                     ord.action_confirm() #Creating delivery
-                    ord.action_done()  #Confirm order to status "Done"
-                    inv_id = ord.action_invoice_create() #Creating invoice
-
-                    if order_data['amount_total'] == 0:
-                       inv = registry['account.invoice'].browse(cr, SUPERUSER_ID, inv_id, context=context)[0]
-                       inv.action_move_create()
-                       inv_date = order_data.get('date_order', datetime.now())
-                       registry['account.invoice'].write(cr, SUPERUSER_ID, inv_id, {'date_invoice': inv_date, 'state': 'paid'})
-                       inv._onchange_payment_term_date_invoice()
-                    else:
-                       workflow.trg_validate(SUPERUSER_ID, 'account.invoice', inv_id[0], 'invoice_open', cr)
-
                     #STOCK
                     stock_pick_id = self.get_id_from_record(cr,  registry, 'stock.picking', [('origin', '=', order_data['name'])], context=context)
                     stock_pick = registry['stock.picking'].browse(cr, SUPERUSER_ID, stock_pick_id, context=context)[0]
@@ -160,6 +150,19 @@ class MagentoController(http.Controller):
                     stock_transf_id = registry['stock.immediate.transfer'].create(cr, SUPERUSER_ID, {'pick_id': stock_pick.id}, context=context)
                     stock_transf = registry['stock.immediate.transfer'].browse(cr, SUPERUSER_ID, stock_transf_id, context=context)[0]
                     stock_transf.process()
+
+                    inv_id = ord.action_invoice_create() #Creating invoice
+
+                    if order_data['amount_total'] == 0:
+                       inv = registry['account.invoice'].browse(cr, SUPERUSER_ID, inv_id, context=context)[0]
+                       inv.action_move_create()
+                       inv_date = order_data.get('date_order', datetime.now())
+                       registry['account.invoice'].write(cr, SUPERUSER_ID, inv_id, {'date_invoice': inv_date, 'state': 'paid'})
+                       inv._onchange_payment_term_date_invoice()
+                    else:
+                       workflow.trg_validate(SUPERUSER_ID, 'account.invoice', inv_id[0], 'invoice_open', cr)
+
+                    ord.action_done()  #Confirm order to status "Done"
 
                 except Exception as e:
                   _logger.error(e)
