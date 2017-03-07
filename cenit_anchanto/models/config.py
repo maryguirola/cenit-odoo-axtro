@@ -58,13 +58,6 @@ class CenitIntegrationSettings(models.TransientModel):
     def install(self, cr, uid, context=None):
 
         installer = self.pool.get('cenit.collection.installer')
-        data = installer.get_collection_data(
-            cr, uid,
-            COLLECTION_NAME,
-            version = COLLECTION_VERSION,
-            context = context
-        )
-
         installer.install_collection(cr, uid, {'name': COLLECTION_NAME})
 
         #return rc
