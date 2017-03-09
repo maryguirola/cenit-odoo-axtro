@@ -13,10 +13,6 @@ _logger = logging.getLogger(__name__)
 
 
 class AnchantoController(http.Controller):
-    '''
-       Search a product by domain
-    '''
-
     @http.route(['/product'],
                 type='http', auth='none', methods=['GET'], csrf=False)
     def get_product(self, key_search, value):
@@ -89,10 +85,44 @@ class AnchantoController(http.Controller):
             _logger.info("Candidate connections: %s", rc)
             if rc:
                 data = request.jsonrequest
-                prod = registry['product.template'].search(cr, SUPERUSER_ID, [('id', '=',data["odoo_product_id"])])
+                prod = registry['product.template'].search(cr, SUPERUSER_ID, [('id', '=', data["odoo_product_id"])])
 
                 if prod:
-                    registry['product.template'].write(cr, SUPERUSER_ID, data["odoo_product_id"], {'weight': data["weight"]})
+                    registry['product.template'].write(cr, SUPERUSER_ID, data["odoo_product_id"],
+                                                       {'weight': data["weight"]})
                     return {'response': 'success'}
                 else:
                     return {'response': 'Product not found'}
+
+
+    @http.route(['/purchaseorder'],
+                type='json', auth='none', methods=['POST'], csrf=False)
+    def update_purchase_order(self):
+        environ = request.httprequest.headers.environ.copy()
+
+        key = environ.get('HTTP_X_USER_ACCESS_KEY', False)
+        token = environ.get('HTTP_X_USER_ACCESS_TOKEN', False)
+        db_name = environ.get('HTTP_TENANT_DB', False)
+
+        if not db_name:
+            host = environ.get('HTTP_HOST', "")
+            db_name = host.replace(".", "_").split(":")[0]
+
+        registry = RegistryManager.get(db_name)
+        with registry.cursor() as cr:
+            connection_model = registry['cenit.connection']
+            domain = [('key', '=', key), ('token', '=', token)]
+            _logger.info(
+                "Searching for a 'cenit.connection' with key '%s' and "
+                "matching token", key)
+            rc = connection_model.search(cr, SUPERUSER_ID, domain)
+            _logger.info("Candidate connections: %s", rc)
+            if rc:
+                data = request.jsonrequest
+                po = registry['purchase.order'].search(cr, SUPERUSER_ID, [('name', '=', data["po_number"])])
+                if po:
+                    registry['purchase.order'].write(cr, SUPERUSER_ID, data["id"], {data["field"]: data["value"]})
+                    return {'response': 'success'}
+                else:
+                    return {'response': 'Purchase order not found'}
+

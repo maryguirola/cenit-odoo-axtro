@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-##############################################################################
+# #############################################################################
 #
-#    OpenERP, Open Source Management Solution
+# OpenERP, Open Source Management Solution
 #    Copyright (C) 2004-2010, 2014 Tiny SPRL (<http://tiny.be>).
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -32,6 +32,7 @@ COLLECTION_PARAMS = {
     # WITHOUT COLLECTION_PARAMS.
 }
 
+
 class CenitIntegrationSettings(models.TransientModel):
     _name = "cenit.anchanto.settings"
     _inherit = 'cenit.hub.settings'
@@ -60,4 +61,30 @@ class CenitIntegrationSettings(models.TransientModel):
         installer = self.pool.get('cenit.collection.installer')
         installer.install_collection(cr, uid, {'name': COLLECTION_NAME})
 
-        #return rc
+
+    def update_connection_role(self, cr, uid, context):
+        role_pool = self.pool.get("cenit.connection.role")
+        conn_rol = role_pool.get(cr, uid, "/setup/connection_role", {'name': 'My Odoo role'})
+        if conn_rol:
+            if len(conn_rol["connection_role"]) > 0:
+                conn_rol = conn_rol["connection_role"][0]
+                webhook = {
+                    "_reference": "True",
+                    "namespace": "Odoo",
+                    "name": "Get product"
+                }
+                conn_rol["webhooks"].append(webhook)
+                webhook = {
+                    "_reference": "True",
+                    "namespace": "Odoo",
+                    "name": "Update product"
+                }
+                conn_rol["webhooks"].append(webhook)
+                webhook = {
+                    "_reference": "True",
+                    "namespace": "Odoo",
+                    "name": "Update purchase order number"
+                },
+                conn_rol["webhooks"].append(webhook)
+
+                role_pool.post(cr, uid, "/setup/connection_role", conn_rol)
