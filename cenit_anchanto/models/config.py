@@ -23,7 +23,6 @@ import logging
 
 from openerp import models, fields
 
-
 _logger = logging.getLogger(__name__)
 
 COLLECTION_NAME = "anchanto"
@@ -56,15 +55,15 @@ class CenitIntegrationSettings(models.TransientModel):
     ############################################################################
     # Actions
     ############################################################################
-    def install(self, cr, uid, context=None):
+    def install(self):
 
-        installer = self.pool.get('cenit.collection.installer')
-        installer.install_collection(cr, uid, {'name': COLLECTION_NAME})
+        installer = self.env['cenit.collection.installer']
+        installer.install_collection({'name': COLLECTION_NAME})
 
 
-    def update_connection_role(self, cr, uid, context):
-        role_pool = self.pool.get("cenit.connection.role")
-        conn_rol = role_pool.get(cr, uid, "/setup/connection_role", {'name': 'My Odoo role'})
+    def update_connection_role(self):
+        role_pool = self.env["cenit.connection.role"]
+        conn_rol = role_pool.get("/setup/connection_role", {'name': 'My Odoo role'})
         if conn_rol:
             if len(conn_rol["connection_role"]) > 0:
                 conn_rol = conn_rol["connection_role"][0]
@@ -77,7 +76,7 @@ class CenitIntegrationSettings(models.TransientModel):
                 webhook = {
                     "_reference": "True",
                     "namespace": "Odoo",
-                    "name": "Update product"
+                    "name": "Update product's weight"
                 }
                 conn_rol["webhooks"].append(webhook)
                 webhook = {
@@ -87,4 +86,4 @@ class CenitIntegrationSettings(models.TransientModel):
                 },
                 conn_rol["webhooks"].append(webhook)
 
-                role_pool.post(cr, uid, "/setup/connection_role", conn_rol)
+                role_pool.post("/setup/connection_role", conn_rol)
