@@ -70,12 +70,41 @@ class AnchantoController(http.Controller):
         with registry.cursor() as cr:
             env = Environment(cr, SUPERUSER_ID, {})
             data = request.jsonrequest
-            po = env['purchase.order'].search([('name', '=', data["po_number"])])
+            po = env['purchase.order'].search([('id', '=', data["id"])])
             if po:
-                env['purchase.order'].write({'id': po["id"], data["field"]: data["value"]})
+                po.write({data["field"]: data["value"]})
                 return {'response': 'success'}
             else:
-                return {'response': 'Purchase order ' + data['po_number'] + 'not found'}
+                return {'response': 'Purchase order number ' + data['name'] + 'not found'}
+
+    @http.route(['/purchaseorder/shipment'],
+            type='json', auth='none', methods=['POST'], csrf=False)
+    def update_shipment_purchase_order(self):
+        db_name = self.search_connection(request)
+        registry = RegistryManager.get(db_name)
+        with registry.cursor() as cr:
+            env = Environment(cr, SUPERUSER_ID, {})
+            data = request.jsonrequest
+            data_products = data["products"]
+            po = env['purchase.order'].search([('id', '=', data["id"])])
+            if po:
+                pickings = po.picking_ids
+                for pick in pickings:
+                    products = pick.pack_operation_product_ids
+                    for prod in products:
+                        if prod['product_id']['barcode'] in data_products:
+                            barcode = prod['product_id']['barcode']
+                            prod.write({'qty_done': data_products[barcode]})
+
+                    #Validate transfer(stock.picking)
+                    if pick.check_backorder():
+                        wiz = self.env['stock.backorder.confirmation'].create({'pick_id': pick.id})
+                    #pick.do_new_transfer()
+                    #stock_transf_id = registry['stock.immediate.transfer'].create({'pick_id': pick.id})
+                    #stock_transf = registry['stock.immediate.transfer'].search(stock_transf_id)
+                    #stock_transf.process()
+            else:
+                return {'response': 'Purchase order number ' + data['name'] + 'not found'}
 
 
     def search_connection(self, request):
