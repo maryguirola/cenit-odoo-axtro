@@ -44,6 +44,17 @@ class AnchantoController(http.Controller):
             return simplejson.dumps(data)
 
 
+    @http.route(['/products'],
+                type='http', auth='none', methods=['GET'], csrf=False)
+    def get_products(self, offset):
+        db_name = self.search_connection(request)
+        registry = RegistryManager.get(db_name)
+        with registry.cursor() as cr:
+            env = Environment(cr, SUPERUSER_ID, {})
+            prod_tm = env['product.template']
+            products = prod_tm.search_read(fields=['id', 'name', 'barcode', 'price', 'cost_method', 'weight'], order='id', limit=50, offset=int(offset))
+            return simplejson.dumps(products)
+        
     @http.route(['/product'],
                 type='json', auth='none', methods=['POST'], csrf=False)
     def update_product(self):
