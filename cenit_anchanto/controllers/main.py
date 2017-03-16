@@ -45,16 +45,17 @@ class AnchantoController(http.Controller):
 
 
     @http.route(['/products'],
-                type='http', auth='none', methods=['GET'], csrf=False)
-    def get_products(self, offset):
+                type='json', auth='none', methods=['POST'], csrf=False)
+    def get_products(self):
         db_name = self.search_connection(request)
         registry = RegistryManager.get(db_name)
         with registry.cursor() as cr:
             env = Environment(cr, SUPERUSER_ID, {})
+            offset = request.jsonrequest['offset']
             prod_tm = env['product.template']
-            products = prod_tm.search_read(fields=['id', 'name', 'barcode', 'price', 'cost_method', 'weight'], order='id', limit=50, offset=int(offset))
-            return simplejson.dumps(products)
-        
+            products = prod_tm.search_read(fields=['id', 'name', 'barcode', 'price', 'cost_method', 'weight'], order='id', limit=50, offset=offset)
+            return products
+
     @http.route(['/product'],
                 type='json', auth='none', methods=['POST'], csrf=False)
     def update_product(self):
@@ -116,7 +117,6 @@ class AnchantoController(http.Controller):
                     #stock_transf.process()
             else:
                 return {'response': 'Purchase order number ' + data['name'] + 'not found'}
-
 
     def search_connection(self, request):
         environ = request.httprequest.headers.environ.copy()
