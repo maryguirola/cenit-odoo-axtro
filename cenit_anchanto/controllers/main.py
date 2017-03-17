@@ -53,7 +53,7 @@ class AnchantoController(http.Controller):
             env = Environment(cr, SUPERUSER_ID, {})
             offset = request.jsonrequest['offset']
             prod_tm = env['product.template']
-            products = prod_tm.search_read(fields=['id', 'name', 'barcode', 'price', 'cost_method', 'weight'], order='id', limit=50, offset=offset)
+            products = prod_tm.search_read(fields=['id', 'name', 'barcode', 'standard_price', 'weight', 'default_code'], order='id', limit=50, offset=offset)
             return products
 
     @http.route(['/product'],
