@@ -76,13 +76,13 @@ class AnchantoController(http.Controller):
 
     @http.route(['/purchaseorder'],
             type='json', auth='none', methods=['POST'], csrf=False)
-    def update_purchase_order(self):
+    def update_receipt_from_purchase_order(self):
         db_name = self.search_connection(request)
         registry = RegistryManager.get(db_name)
         with registry.cursor() as cr:
             env = Environment(cr, SUPERUSER_ID, {})
             data = request.jsonrequest
-            po = env['purchase.order'].search([('id', '=', data["id"])])
+            po = env['stock.picking'].search([('id', '=', data["id"])])
             if po:
                 po.write({data["field"]: data["value"]})
                 return {'response': 'success'}
@@ -146,3 +146,27 @@ class AnchantoController(http.Controller):
         r = {'status': status_code}
 
         return simplejson.dumps(r)
+
+    @http.route(['/purchaseorder/products'],
+                type='json', auth='none', methods=['POST'], csrf=False)
+    def get_products_purchase_order(self):
+        db_name = self.search_connection(request)
+        registry = RegistryManager.get(db_name)
+        with registry.cursor() as cr:
+            env = Environment(cr, SUPERUSER_ID, {})
+            domain = [('name', '=', request.jsonrequest['po_number'])]
+            po = env['purchase.order'].search(domain)
+
+            if po:
+                prods = []
+                for p in po['order_line']:
+                    data = {
+                        'sku': p['product_id']['barcode'],
+                        'cost_price': p['price_unit'],
+                        'expiry_date': p['date_planned'],
+                        'quantity': p['product_qty']
+                    }
+                    prods.append(data)
+                return prods
+            else:
+               return {'response': 'Purchase order number ' + request.jsonrequest['po_number'] + 'not found'}
