@@ -16,9 +16,17 @@ _logger = logging.getLogger(__name__)
 
 
 class AnchantoController(http.Controller):
+
     @http.route(['/product'],
                 type='http', auth='none', methods=['GET'], csrf=False)
     def get_product(self, key_search, value):
+        """
+          Gets a product from the inventory module by a key and value specified
+
+          :param key_search: Filter of the search
+          :param value: Value of the filter
+          :return: Product found
+        """
         db_name = self.search_connection(request)
         registry = RegistryManager.get(db_name)
         with registry.cursor() as cr:
@@ -30,11 +38,11 @@ class AnchantoController(http.Controller):
                 data = {
                     "response": "success",
                     "product": {
-                            "id": product["id"],
-                            "name": product["name"],
-                            "barcode": product["barcode"],
-                            "price": product["price"],
-                            "cost_method": product["cost_method"]
+                        "id": product["id"],
+                        "name": product["name"],
+                        "barcode": product["barcode"],
+                        "price": product["price"],
+                        "cost_method": product["cost_method"]
                     }
                 }
             else:
@@ -47,18 +55,27 @@ class AnchantoController(http.Controller):
     @http.route(['/products'],
                 type='json', auth='none', methods=['POST'], csrf=False)
     def get_products(self):
+        """
+          Gets all products from the inventory module
+
+          :return: List of products
+       """
         db_name = self.search_connection(request)
         registry = RegistryManager.get(db_name)
         with registry.cursor() as cr:
             env = Environment(cr, SUPERUSER_ID, {})
             offset = request.jsonrequest['offset']
             prod_tm = env['product.template']
-            products = prod_tm.search_read(fields=['id', 'name', 'barcode', 'standard_price', 'weight', 'default_code'], order='id', limit=50, offset=offset)
+            products = prod_tm.search_read(fields=['id', 'name', 'barcode', 'standard_price', 'weight', 'default_code'],
+                                           order='id', limit=50, offset=offset)
             return products
 
     @http.route(['/product'],
                 type='json', auth='none', methods=['POST'], csrf=False)
-    def update_product(self):
+    def update_product_weight(self):
+        """
+          Updates the product's weight by its id
+        """
         db_name = self.search_connection(request)
         registry = RegistryManager.get(db_name)
         with registry.cursor() as cr:
@@ -68,15 +85,18 @@ class AnchantoController(http.Controller):
 
             if prod:
                 env['product.template'].write({"id": data["odoo_product_id"],
-                                              'weight': data["weight"]})
+                                               'weight': data["weight"]})
                 return {'response': 'success'}
             else:
                 return {'response': 'Product with id ' + data["odoo_product_id"] + ' wasn\'t found'}
 
 
     @http.route(['/purchaseorder'],
-            type='json', auth='none', methods=['POST'], csrf=False)
+                type='json', auth='none', methods=['POST'], csrf=False)
     def update_receipt_from_purchase_order(self):
+        """
+        Updates a field of the purchase order receipt
+        """
         db_name = self.search_connection(request)
         registry = RegistryManager.get(db_name)
         with registry.cursor() as cr:
@@ -90,7 +110,7 @@ class AnchantoController(http.Controller):
                 return {'response': 'Purchase order number ' + data['name'] + 'not found'}
 
     @http.route(['/purchaseorder/shipment'],
-            type='json', auth='none', methods=['POST'], csrf=False)
+                type='json', auth='none', methods=['POST'], csrf=False)
     def update_shipment_purchase_order(self):
         db_name = self.search_connection(request)
         registry = RegistryManager.get(db_name)
@@ -98,23 +118,21 @@ class AnchantoController(http.Controller):
             env = Environment(cr, SUPERUSER_ID, {})
             data = request.jsonrequest
             data_products = data["products"]
-            po = env['purchase.order'].search([('id', '=', data["id"])])
-            if po:
-                pickings = po.picking_ids
-                for pick in pickings:
+            pick = env['stock.picking'].search([('id', '=', data["id"])])
+            if pick:
                     products = pick.pack_operation_product_ids
                     for prod in products:
                         if prod['product_id']['barcode'] in data_products:
                             barcode = prod['product_id']['barcode']
-                            prod.write({'qty_done': data_products[barcode]})
+                            prod.write({'qty_done': data_products[barcode]}) # Updating product's quantities in stock.picking
 
-                    #Validate transfer(stock.picking)
-                    if pick.check_backorder():
-                        wiz = self.env['stock.backorder.confirmation'].create({'pick_id': pick.id})
-                    #pick.do_new_transfer()
-                    #stock_transf_id = registry['stock.immediate.transfer'].create({'pick_id': pick.id})
-                    #stock_transf = registry['stock.immediate.transfer'].search(stock_transf_id)
-                    #stock_transf.process()
+                    # Validate transfer(stock.picking)
+                    if pick.check_backorder(pick): # Check if create back order
+                        back_order = env['stock.backorder.confirmation'].create({'pick_id': pick.id})
+                        back_order.process()
+                    else:
+                        pick.do_new_transfer() # Else, update product's quantities and set to done the Transfer.
+                    return {'response': 'success'}
             else:
                 return {'response': 'Purchase order number ' + data['name'] + 'not found'}
 
@@ -169,4 +187,4 @@ class AnchantoController(http.Controller):
                     prods.append(data)
                 return prods
             else:
-               return {'response': 'Purchase order number ' + request.jsonrequest['po_number'] + 'not found'}
+                return {'response': 'Purchase order number ' + request.jsonrequest['po_number'] + 'not found'}
