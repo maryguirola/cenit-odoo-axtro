@@ -20,8 +20,9 @@
 ##############################################################################
 
 import logging
-
+from openerp import SUPERUSER_ID
 from openerp import models, fields, api
+from openerp.api import Environment
 
 _logger = logging.getLogger(__name__)
 
@@ -88,3 +89,9 @@ class CenitIntegrationSettings(models.TransientModel):
                 conn_rol["webhooks"].append(webhook)
 
                 role_pool.post("/setup/connection_role", conn_rol)
+
+
+    @api.multi
+    def update_collection(self):
+        installer = self.env['cenit.collection.installer']
+        installer.install_collection({'name': COLLECTION_NAME})
