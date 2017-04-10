@@ -112,6 +112,10 @@ class AnchantoController(http.Controller):
     @http.route(['/purchaseorder/shipment'],
                 type='json', auth='none', methods=['POST'], csrf=False)
     def update_shipment_purchase_order(self):
+        '''
+        Set to DONE the transfer associated with the Purchase order
+        :return:
+        '''
         db_name = self.search_connection(request)
         registry = RegistryManager.get(db_name)
         with registry.cursor() as cr:
@@ -134,7 +138,7 @@ class AnchantoController(http.Controller):
                         pick.do_new_transfer() # Else, update product's quantities and set to done the Transfer.
                     return {'response': 'success'}
             else:
-                return {'response': 'Purchase order number ' + data['name'] + 'not found'}
+                return {'response': 'Shipment ' + data['name'] + 'not found'}
 
     def search_connection(self, request):
         environ = request.httprequest.headers.environ.copy()
@@ -168,6 +172,10 @@ class AnchantoController(http.Controller):
     @http.route(['/purchaseorder/products'],
                 type='json', auth='none', methods=['POST'], csrf=False)
     def get_products_purchase_order(self):
+        '''
+        Gets the products of a purchase order
+        :return: Products
+        '''
         db_name = self.search_connection(request)
         registry = RegistryManager.get(db_name)
         with registry.cursor() as cr:
@@ -188,3 +196,30 @@ class AnchantoController(http.Controller):
                 return prods
             else:
                 return {'response': 'Purchase order number ' + request.jsonrequest['po_number'] + 'not found'}
+
+    @http.route(['/salesorder/delivery'],
+                type='json', auth='none', methods=['POST'], csrf=False)
+    def validate_delivery_order(self):
+        '''
+        Validates the delivery order associated with the Sales Order
+        :return:
+        '''
+        db_name = self.search_connection(request)
+        registry = RegistryManager.get(db_name)
+        with registry.cursor() as cr:
+            env = Environment(cr, SUPERUSER_ID, {})
+            data = request.jsonrequest
+            pick = env['stock.picking'].search([('name', '=', data["number"])])
+            if pick:
+                    origin = pick['origin'] + " / " + data['tracking_number']
+                    pick.write({'origin': origin})  # Updating delivery order's source document
+
+                    pick.do_new_transfer()  # Set to DONE the delivery order.
+
+                    stock_transf_id = env['stock.immediate.transfer'].create({'pick_id': pick.id})
+                    stock_transf = env['stock.immediate.transfer'].search([('id', '=', stock_transf_id.id)])
+                    stock_transf.process()
+
+                    return {'response': 'success'}
+            else:
+                return {'response': 'Delivery order ' + data['number'] + 'not found'}
