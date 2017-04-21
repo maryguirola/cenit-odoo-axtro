@@ -211,7 +211,7 @@
                 "reference": null,
                 "primary": false,
                 "value": "product_type",
-                "line_type": "field",
+                "line_type": "default",
                 "inlined": false
             },
             {
