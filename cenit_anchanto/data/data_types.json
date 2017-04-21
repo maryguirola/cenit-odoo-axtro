@@ -586,7 +586,7 @@
                 "inlined": false
             }
         ],
-        "model": "product.template",
+        "model": "stock.picking",
         "namespace": "Anchanto",
         "id": 11,
         "schema": "Order"
