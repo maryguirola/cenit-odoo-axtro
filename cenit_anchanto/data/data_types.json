@@ -1,0 +1,594 @@
+[
+    {
+        "name": "Create Product.template as AnchantoProduct",
+        "triggers": [
+            {
+                "cron_lapse": "10",
+                "cron_units": "minutes",
+                "cron_restrictions": "all",
+                "name": "on_create",
+                "cron_name": false
+            }
+        ],
+        "domains": [
+            {
+                "field": "sale_ok",
+                "value": "True",
+                "op": "="
+            }
+        ],
+        "lines": [
+            {
+                "line_cardinality": null,
+                "name": "name",
+                "reference": null,
+                "primary": false,
+                "value": "name",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "barcode",
+                "reference": null,
+                "primary": false,
+                "value": "sku",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "id",
+                "reference": null,
+                "primary": false,
+                "value": "id",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "default_code",
+                "reference": null,
+                "primary": false,
+                "value": "merchant_code",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "5.0",
+                "reference": null,
+                "primary": false,
+                "value": "width",
+                "line_type": "default",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "5.0",
+                "reference": null,
+                "primary": false,
+                "value": "height",
+                "line_type": "default",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "5.0",
+                "reference": null,
+                "primary": false,
+                "value": "length",
+                "line_type": "default",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "500 if obj.weight ==0 else (obj.weight*1000)",
+                "reference": null,
+                "primary": false,
+                "value": "weight",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "standard",
+                "reference": null,
+                "primary": false,
+                "value": "product_type",
+                "line_type": "default",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "standard_price",
+                "reference": null,
+                "primary": false,
+                "value": "cost_price",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "obj.barcode if not obj.barcode.startswith('0') else obj.barcode[1:]",
+                "reference": null,
+                "primary": false,
+                "value": "mfupc_code",
+                "line_type": "code",
+                "inlined": false
+            }
+        ],
+        "model": "product.template",
+        "namespace": "Anchanto",
+        "id": 4,
+        "schema": "Product"
+    },
+    {
+        "name": "Update Product.template as AnchantoProduct",
+        "triggers": [
+            {
+                "cron_lapse": "10",
+                "cron_units": "minutes",
+                "cron_restrictions": "all",
+                "name": "on_write",
+                "cron_name": false
+            }
+        ],
+        "domains": [
+            {
+                "field": "barcode",
+                "value": "False",
+                "op": "!="
+            }
+        ],
+        "lines": [
+            {
+                "line_cardinality": null,
+                "name": "id",
+                "reference": null,
+                "primary": false,
+                "value": "id",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "name",
+                "reference": null,
+                "primary": false,
+                "value": "name",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "default_code",
+                "reference": null,
+                "primary": false,
+                "value": "merchant_code",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "5.0",
+                "reference": null,
+                "primary": false,
+                "value": "width",
+                "line_type": "default",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "5.0",
+                "reference": null,
+                "primary": false,
+                "value": "height",
+                "line_type": "default",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "5.0",
+                "reference": null,
+                "primary": false,
+                "value": "length",
+                "line_type": "default",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "500 if obj.weight ==0 else (obj.weight*1000)",
+                "reference": null,
+                "primary": false,
+                "value": "weight",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "standard",
+                "reference": null,
+                "primary": false,
+                "value": "product_type",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "standard_price",
+                "reference": null,
+                "primary": false,
+                "value": "cost_price",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "barcode",
+                "reference": null,
+                "primary": false,
+                "value": "sku",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "obj.barcode if not obj.barcode.startswith('0') else obj.barcode[1:]",
+                "reference": null,
+                "primary": false,
+                "value": "mfupc_code",
+                "line_type": "code",
+                "inlined": false
+            }
+        ],
+        "model": "product.template",
+        "namespace": "Anchanto",
+        "id": 7,
+        "schema": "Product"
+    },
+    {
+        "name": "Partner Mapping",
+        "triggers": [],
+        "domains": [],
+        "lines": [
+            {
+                "line_cardinality": null,
+                "name": "obj.name",
+                "reference": null,
+                "primary": false,
+                "value": "firstname",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "obj.street",
+                "reference": null,
+                "primary": false,
+                "value": "address1",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "obj.country_id.name if obj.country_id else \"Singapore\"",
+                "reference": null,
+                "primary": false,
+                "value": "country",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "phone",
+                "reference": null,
+                "primary": false,
+                "value": "phone",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "zip",
+                "reference": null,
+                "primary": false,
+                "value": "zipcode",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "obj.city if obj.city else \"Singapore\"",
+                "reference": null,
+                "primary": false,
+                "value": "city",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "street2",
+                "reference": null,
+                "primary": false,
+                "value": "address2",
+                "line_type": "field",
+                "inlined": false
+            }
+        ],
+        "model": "res.partner",
+        "namespace": "Anchanto",
+        "id": 8,
+        "schema": "Address"
+    },
+    {
+        "name": "StockPicking as Inbound Consignment",
+        "triggers": [
+            {
+                "cron_lapse": "10",
+                "cron_units": "minutes",
+                "cron_restrictions": "all",
+                "name": "on_write",
+                "cron_name": false
+            }
+        ],
+        "domains": [
+            {
+                "field": "state",
+                "value": "assigned",
+                "op": "="
+            },
+            {
+                "field": "picking_type_id.name",
+                "value": "Receipts",
+                "op": "="
+            },
+            {
+                "field": "picking_type_id.warehouse_id.name",
+                "value": "Peninsula Shopping Centre",
+                "op": "="
+            }
+        ],
+        "lines": [
+            {
+                "line_cardinality": null,
+                "name": "obj.partner_id.name  ' ' obj.partner_id.street",
+                "reference": null,
+                "primary": false,
+                "value": "shipper_address",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "obj.group_id.name",
+                "reference": null,
+                "primary": false,
+                "value": "po_number",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "min_date",
+                "reference": null,
+                "primary": false,
+                "value": "ship_date",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "id",
+                "reference": null,
+                "primary": false,
+                "value": "id",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "AW",
+                "reference": null,
+                "primary": false,
+                "value": "warehouse_code",
+                "line_type": "default",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "retailer_to_fba",
+                "reference": null,
+                "primary": false,
+                "value": "consignment_type",
+                "line_type": "default",
+                "inlined": false
+            }
+        ],
+        "model": "stock.picking",
+        "namespace": "Anchanto",
+        "id": 9,
+        "schema": "InboundConsignment"
+    },
+    {
+        "name": "StockPickingLine As SalesOrderLine",
+        "triggers": [],
+        "domains": [],
+        "lines": [
+            {
+                "line_cardinality": null,
+                "name": "product_qty",
+                "reference": null,
+                "primary": false,
+                "value": "quantity",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "obj.product_id.name",
+                "reference": null,
+                "primary": false,
+                "value": "product_name",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "obj.product_id.barcode",
+                "reference": null,
+                "primary": false,
+                "value": "sku",
+                "line_type": "code",
+                "inlined": false
+            }
+        ],
+        "model": "stock.move",
+        "namespace": "Anchanto",
+        "id": 10,
+        "schema": "OrderItem"
+    },
+    {
+        "name": "Stock.picking As Anchanto Sales Order",
+        "triggers": [
+            {
+                "cron_lapse": "10",
+                "cron_units": "minutes",
+                "cron_restrictions": "all",
+                "name": "on_write",
+                "cron_name": false
+            }
+        ],
+        "domains": [
+            {
+                "field": "picking_type_id.warehouse_id.name",
+                "value": "Anchanto",
+                "op": "="
+            },
+            {
+                "field": "picking_type_id.name",
+                "value": "Delivery Orders",
+                "op": "="
+            },
+            {
+                "field": "state",
+                "value": "assigned",
+                "op": "="
+            }
+        ],
+        "lines": [
+            {
+                "line_cardinality": null,
+                "name": "len(obj.pack_operation_product_ids)",
+                "reference": null,
+                "primary": false,
+                "value": "item_total",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "self.env['sale.order'].search([('name', '=', obj.origin)]).amount_total",
+                "reference": null,
+                "primary": false,
+                "value": "total",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": "2many",
+                "name": "pack_operation_product_ids",
+                "reference": "StockPickingLine As SalesOrderLine",
+                "primary": false,
+                "value": "line_items",
+                "line_type": "model",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "{  \"firstname\": self.env['sale.order'].search([('name', '=', obj.origin)]).partner_id.parent_id.name         if self.env['sale.order'].search([('name', '=', obj.origin)]).partner_id.parent_id         else self.env['sale.order'].search([('name', '=', obj.origin)]).partner_id.name,     \"address1\": self.env['sale.order'].search([('name', '=', obj.origin)]).partner_id.street,     \"address2\": self.env['sale.order'].search([('name', '=', obj.origin)]).partner_id.street2,     \"city\": self.env['sale.order'].search([('name', '=', obj.origin)]).partner_id.city         if self.env['sale.order'].search([('name', '=', obj.origin)]).partner_id.city         else \"Singapore\",     \"zipcode\": self.env['sale.order'].search([('name', '=', obj.origin)]).partner_id.zip,     \"phone\": self.env['sale.order'].search([('name', '=', obj.origin)]).partner_id.phone,     \"country\": self.env['sale.order'].search([('name', '=', obj.origin)]).partner_id.country_id.name         if self.env['sale.order'].search([('name', '=', obj.origin)]).partner_id.country_id         else \"Singapore\" }",
+                "reference": null,
+                "primary": false,
+                "value": "shipping_address",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "len(obj.pack_operation_product_ids)",
+                "reference": null,
+                "primary": false,
+                "value": "number_of_items",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "min_date",
+                "reference": null,
+                "primary": false,
+                "value": "delivery_date",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "COD",
+                "reference": null,
+                "primary": false,
+                "value": "payment_method",
+                "line_type": "default",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "name",
+                "reference": null,
+                "primary": false,
+                "value": "id",
+                "line_type": "field",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "0",
+                "reference": null,
+                "primary": false,
+                "value": "ready_to_send",
+                "line_type": "default",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "self.env['sale.order'].search([('name', '=', obj.origin)]).date_order",
+                "reference": null,
+                "primary": false,
+                "value": "completed_at",
+                "line_type": "code",
+                "inlined": false
+            },
+            {
+                "line_cardinality": "2one",
+                "name": "jmd_partner_invoice_id_do",
+                "reference": "Partner Mapping",
+                "primary": false,
+                "value": "billing_address",
+                "line_type": "model",
+                "inlined": false
+            },
+            {
+                "line_cardinality": null,
+                "name": "name",
+                "reference": null,
+                "primary": false,
+                "value": "number",
+                "line_type": "field",
+                "inlined": false
+            }
+        ],
+        "model": "product.template",
+        "namespace": "Anchanto",
+        "id": 11,
+        "schema": "Order"
+    }
+]
