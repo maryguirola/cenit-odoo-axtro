@@ -352,7 +352,7 @@
         "lines": [
             {
                 "line_cardinality": null,
-                "name": "obj.partner_id.name  ' ' obj.partner_id.street",
+                "name": "obj.partner_id.name+' '+obj.partner_id.street",
                 "reference": null,
                 "primary": false,
                 "value": "shipper_address",

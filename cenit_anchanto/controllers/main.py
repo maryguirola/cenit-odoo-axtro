@@ -16,7 +16,6 @@ _logger = logging.getLogger(__name__)
 
 
 class AnchantoController(http.Controller):
-
     @http.route(['/product'],
                 type='http', auth='none', methods=['GET'], csrf=False)
     def get_product(self, key_search, value):
@@ -195,7 +194,8 @@ class AnchantoController(http.Controller):
                     prods.append(data)
                 return prods
             else:
-                return {'response': 'Purchase order number ' + request.jsonrequest['po_number'] + 'not found'}
+                return {'response': 'Purchase order number ' + request.jsonrequest['po_number'] + ' not found'}
+
 
     @http.route(['/salesorder/delivery'],
                 type='json', auth='none', methods=['POST'], csrf=False)
@@ -211,15 +211,15 @@ class AnchantoController(http.Controller):
             data = request.jsonrequest
             pick = env['stock.picking'].search([('name', '=', data["number"])])
             if pick:
-                    origin = pick['origin'] + " / " + data['tracking_number']
-                    pick.write({'origin': origin})  # Updating delivery order's source document
+                origin = pick['origin'] + " / " + data['tracking_number']
+                pick.write({'origin': origin})  # Updating delivery order's source document
 
-                    pick.do_new_transfer()  # Set to DONE the delivery order.
+                pick.do_new_transfer()  # Set to DONE the delivery order.
 
-                    stock_transf_id = env['stock.immediate.transfer'].create({'pick_id': pick.id})
-                    stock_transf = env['stock.immediate.transfer'].search([('id', '=', stock_transf_id.id)])
-                    stock_transf.process()
+                stock_transf_id = env['stock.immediate.transfer'].create({'pick_id': pick.id})
+                stock_transf = env['stock.immediate.transfer'].search([('id', '=', stock_transf_id.id)])
+                stock_transf.process()
 
-                    return {'response': 'success'}
+                return {'response': 'success'}
             else:
-                return {'response': 'Delivery order ' + data['number'] + 'not found'}
+                return {'response': 'Delivery order ' + data['number'] + ' not found'}
